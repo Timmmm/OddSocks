@@ -10,7 +10,8 @@ HEADERS += \
     HttpServer.h \
     Base64.h \
     Authentication.h \
-    Address.h
+    Address.h \
+    Common.h
 
 SOURCES += \
     Tempo.cpp \
@@ -21,5 +22,9 @@ SOURCES += \
     HttpServer.cpp \
     Base64.cpp \
     Authentication.cpp \
-    Address.cpp
+    Address.cpp \
+    Common.cpp
 
+QMAKE_CXXFLAGS += -std=c++0x
+
+LIBS += -lpthread

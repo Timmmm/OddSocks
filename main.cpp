@@ -3,11 +3,13 @@
 #include "Authentication.h"
 #include "Address.h"
 #include "HttpServer.h"
+#include "Common.h"
 
 #include <cstring>
 #include <errno.h>
 #include <unistd.h>
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -214,13 +216,13 @@ void* Connection(void* data)
 		int firstSpace = req.find_first_of(' ', 0);
 		int secondSpace = req.find_first_of(' ', firstSpace+1);
 		string path = req.substr(firstSpace+1, secondSpace-firstSpace-1);
-		int passhashPos = path.find("passhash");
+		auto passhashPos = path.find("passhash");
 //		cerr << "Got path: (" << path << ")" << endl;
 		if (passhashPos != string::npos)
 		{
 			string passhash = path.substr(passhashPos + 9);
 			cerr << "Got passhash: (" << passhash << ")" << endl;
-			if (passhash == "ubriaco")
+			if (checkPassword(passhash))
 			{
 				updateClientAuthentication(client, true);
 				inSock.send(printAuthenticationSuccess());
@@ -360,16 +362,97 @@ port << endl;
 	return NULL;
 }
 
-
-int main(int argc, char *argv[])
+struct Config
 {
-	int port = 31122;
+	Config() : port(1080) { }
+	int port;
+	string password;
+};
+
+// Print an error message, usage, and then exit.
+void Usage(string errorMessage)
+{
+	cerr << errorMessage << "\n"
+"Usage: oddsocks [-config <oddsocks.cfg (default)>] [-password <password, default none>] [-port <port, default 1080>]\n"
+"Command line options superseed options in the config file.\n"
+"Supplying the password on the command line will allow other users "
+"on this machine to see it. Not recommended for shared environments!\n";
+	exit(1);
+}
+
+Config ReadConfigFromFile(string filename)
+{
+	Config cfg;
+	ifstream input(filename.c_str());
+	input >> cfg.port >> cfg.password;
+	return cfg;
+}
+
+Config ParseCommandLine(int argc, char* argv[])
+{
+	Config cfg;
+	cfg.port = -1;
+
+	string configFile = "oddsocks.cfg";
+
+	if (argc % 2 != 1)
+	{
+		Usage("Expected an even number of arguments.");
+	}
+	for (int i = 0; i < argc/2; ++i)
+	{
+		string key = argv[i*2+1];
+		string value = argv[i*2+2];
+		if (key == "-config")
+		{
+			configFile = value;
+		}
+		else if (key == "-password")
+		{
+			cfg.password = value;
+		}
+		else if (key == "-port")
+		{
+			cfg.port = StoI(value, -1);
+			if (cfg.port < 1 || cfg.port > 65535)
+				Usage("Port must be between 1 and 65535. Read value " + value + " understood as " + ItoS(cfg.port));
+		}
+		else
+		{
+			Usage("Unknown option: " + key);
+		}
+	}
+
+	// Try to read config file. Slightly dubious logic here!
+	// I should make this more clear.
+	Config cfgFromFile = ReadConfigFromFile(configFile);
+	if (cfg.password == "")
+		cfg.password = cfgFromFile.password;
+	if (cfg.port == -1)
+		cfg.port = cfgFromFile.port;
+	if (cfg.port == -1)
+		cfg.port = 1080;
+
+	return cfg;
+}
+
+int main(int argc, char* argv[])
+{
+	// Command line options will be:
+	// -config <file>
+	// -password <pw>
+	// -port <port>
+	Config cfg = ParseCommandLine(argc, argv);
+
+
+	int port = cfg.port;
+	setPassword(cfg.password);
 
 	int listenSock = socket(PF_INET, SOCK_STREAM, 0);
 	if (listenSock == -1)
 	{
 		cerr << "Error creating listen socket: " << strerror(errno) << endl;
-		return NULL;
+		return 0;
 	}
 
 	// Try to reuse socket. We don't care if it fails really. Yeah yeah security.
@@ -384,13 +467,13 @@ int main(int argc, char *argv[])
 	if (bind(listenSock, reinterpret_cast<sockaddr*>(&listen_addr), sizeof(listen_addr)) == -1)
 	{
 		cerr << "Error binding listen socket: " << strerror(errno) << endl;
-		return NULL;
+		return 0;
 	}
 
 	if (listen(listenSock, 1024) == -1)
 	{
 		cerr << "Error listening on listen socket: " << strerror(errno) << endl;
-		return NULL;
+		return 0;
 	}
 
 	while (true)

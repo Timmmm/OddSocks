@@ -1,4 +1,6 @@
 #pragma once
 
+#include <cstdint>
+
 // Get the time in seconds since epoch.
-int CurrentTimeSeconds();
+uint64_t CurrentTimeSeconds();

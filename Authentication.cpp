@@ -1,7 +1,3 @@
-#include "Authentication.h"
-#include "Tempo.h"
-
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <pthread.h>
@@ -17,21 +13,20 @@ using namespace std;
 
 #include "Mutex.h"
 #include "Address.h"
+#include "Authentication.h"
+#include "Tempo.h"
 
 // This is a map from ip address in binary form to the time at which updateClientAuthentication()
 // was last called.
-map<string, int> authTimes;
+map<string, uint64_t> authTimes;
 Mutex authMutex;
-
-
-
 
 bool clientIsAuthenticated(sockaddr_in address)
 {
 	MutexLocker m(authMutex);
 
 	string strAddress = addressToBinaryString(address);
-	int now = CurrentTimeSeconds();
+	uint64_t now = CurrentTimeSeconds();
 
 	if (authTimes.count(strAddress) < 1)
 		return false;
@@ -44,11 +39,23 @@ void updateClientAuthentication(sockaddr_in address, bool authed)
 	MutexLocker m(authMutex);
 
 	string strAddress = addressToBinaryString(address);
-	int now = CurrentTimeSeconds();
+	uint64_t now = CurrentTimeSeconds();
 
 	if (authed)
 		authTimes[strAddress] = now;
 	else
 		authTimes.erase(strAddress);
+}
+
+string authPassword;
+
+void setPassword(string password)
+{
+	authPassword = password;
+}
+
+bool checkPassword(string password)
+{
+	return authPassword == password;
 }
 

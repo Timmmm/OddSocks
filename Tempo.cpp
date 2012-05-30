@@ -2,7 +2,7 @@
 
 #include <sys/time.h>
 
-int CurrentTimeSeconds()
+uint64_t CurrentTimeSeconds()
 {
 	struct timeval tv;
 	gettimeofday(&tv, 0);
