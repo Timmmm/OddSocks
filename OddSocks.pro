@@ -28,3 +28,6 @@ SOURCES += \
 QMAKE_CXXFLAGS += -std=c++0x
 
 LIBS += -lpthread
+
+OTHER_FILES += \
+    README.mkd

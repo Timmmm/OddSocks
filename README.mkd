@@ -1,0 +1,37 @@
+# OddSocks
+
+This is a very simple SOCKS5 proxy. It implements very simple authentication consisting of
+a single unencrypted password that grants access to your IP address (remembered for 7 days).
+
+## Why?
+
+I created this to run on a server I have access to in the US. I can then access US-only sites such as Hulu and Pandora.
+I wanted something with basic authentication - a single password I can share with friends.
+I found that there was no existing solution to do this, so created this app.
+
+## Security
+
+Authenticated IPs are stored in memory; there is no need for a database.Authentication is implemented by intercepting http requests and diverting them to a "login" page (there is no username though).
+This is because (much to my surprise) no browsers implement SOCKS5 authentication (as far as I know).
+You may be able to use SOCKS5 authentication through Chrome on OSX, since OSX itself seems to support it (maybe).
+But that is not very helpful; hence my approach.
+
+It is currently not very secure at all. The password is sent and stored in plaintext, and must be specified on the command
+line (config file is WIP).
+
+## Compilation
+
+Very simple. Either use qmake, or something like
+
+    g++ *.cpp -lpthread -std=c++0x -o OddSocks
+
+## Usage
+
+    ./OddSocks -port 1234 -password ubriaco
+
+Note that everyone else on the same machine will be able to see the password like this. I think there are ways around
+it, but the best way would be for me to finish support for the `-config` option!
+
+## Licence
+
+This is licensed under the terms of the GPL3.

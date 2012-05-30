@@ -448,6 +448,8 @@ int main(int argc, char* argv[])
 	int port = cfg.port;
 	setPassword(cfg.password);
 
+	cout << "Starting on port " << cfg.port << " with password " << cfg.password << endl;
+
 	int listenSock = socket(PF_INET, SOCK_STREAM, 0);
 	if (listenSock == -1)
 	{
