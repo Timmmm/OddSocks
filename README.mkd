@@ -11,13 +11,12 @@ I found that there was no existing solution to do this, so created this app.
 
 ## Security
 
-Authenticated IPs are stored in memory; there is no need for a database.Authentication is implemented by intercepting http requests and diverting them to a "login" page (there is no username though).
+Authenticated IPs are stored in memory; there is no need for a database. Authentication is implemented by intercepting http requests and diverting them to a "login" page (there is no username though).
 This is because (much to my surprise) no browsers implement SOCKS5 authentication (as far as I know).
 You may be able to use SOCKS5 authentication through Chrome on OSX, since OSX itself seems to support it (maybe).
 But that is not very helpful; hence my approach.
 
-It is currently not very secure at all. The password is sent and stored in plaintext, and must be specified on the command
-line (config file is WIP).
+It is currently not very secure at all. The password is sent and stored in plaintext. I'm ok with that though.
 
 ## Compilation
 

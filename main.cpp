@@ -13,22 +13,11 @@
 
 using namespace std;
 
-/* TODO: Ok, no browsers support authentication, so we will do web-based authentication instead.
-  Until they are authenticated, reject all connections except on port 80.
-  On port 80, if they aren't authenticated show them the page.
-  On port 80 to 203.0.113.1 return our website instead - just a simple user/pass form.
-
-  Authentication is IP-based and time-limited.
-
- */
-
-
 struct ThreadData
 {
 	int socket; // The socket.
 	sockaddr_in client; // The address of the client.
 };
-
 
 void* Connection(void* data)
 {
@@ -376,7 +365,8 @@ void Usage(string errorMessage)
 "Usage: oddsocks [-config <oddsocks.cfg (default)>] [-password <password, default none>] [-port <port, default 1080>]\n"
 "Command line options superseed options in the config file.\n"
 "Supplying the password on the command line will allow other users "
-"on this machine to see it. Not recommended for shared environments!\n";
+"on this machine to see it. Not recommended for shared environments!\n"
+"Config file is simply the port, and then a space and then the password (which can't contain spaces).\n";
 	exit(1);
 }
 
@@ -480,7 +470,7 @@ int main(int argc, char* argv[])
 
 	while (true)
 	{
-		sockaddr_in client_addr; // TODO: IPv6.
+		sockaddr_in client_addr;
 		socklen_t client_addr_len = sizeof(client_addr);
 		int newSock = accept(listenSock, reinterpret_cast<sockaddr*>(&client_addr), &client_addr_len);
 		if (newSock == -1)

@@ -2,7 +2,7 @@
 
 #include "Socket.h"
 
-#include <cstdint>
+#include <stdint.h> // cstdint not available on Macs
 #include <string>
 
 using std::string;
